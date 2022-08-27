@@ -1,0 +1,12 @@
+input:
+  data_file: ./data/wines-data.csv
+
+train:
+  split: train
+  model:
+    penalty: l2
+    solver: liblinear
+    C: 1000
+
+evaluation:
+  split: validation
