@@ -1,0 +1,6 @@
+module: ${eval:LogisticRegression}
+params:
+  penalty: l2
+  solver: liblinear
+  C: ${eval:1 / 1e-3}
+  random_state: ${input.random_seed}

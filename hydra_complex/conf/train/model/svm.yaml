@@ -1,0 +1,6 @@
+module: ${eval:LinearSVC}
+params:
+  penalty: l2
+  loss: hinge
+  C: ${eval:1 / 1e-3}
+  random_state: ${input.random_seed}

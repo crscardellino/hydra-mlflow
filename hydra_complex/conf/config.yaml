@@ -1,0 +1,13 @@
+defaults:
+  - _self_
+  - train/model: logreg
+
+input:
+  data_file: ???
+  random_seed: 42
+
+train:
+  split: train
+
+evaluation:
+  split: validation
