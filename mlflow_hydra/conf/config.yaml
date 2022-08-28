@@ -1,0 +1,17 @@
+input:
+  data_file: ???
+  run_name: ???
+  experiment_name: Hypothesis 1
+  experiment_description: "**Hypothesis 1:** More layers increase the overfitting"
+
+train:
+  test_evaluation: false
+  feature_scaling: true
+  batch_size: 16
+  epochs: 10
+  early_stop: 3
+  model:
+    layers: [64]
+    learning_rate: 1e-3
+    l2_lambda: 1e-5
+    activation: ${eval:torch.nn.ReLU}

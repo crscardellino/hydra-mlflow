@@ -1,6 +1,7 @@
 hydra-core==1.2.0
 jupyter==1.0.0
 mlflow==1.28.0
+numpy==1.23.2
 pandas==1.4.3
 pytorch-lightning==1.7.2
 rise==5.7.1
