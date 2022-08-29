@@ -159,6 +159,9 @@ def main(cfg: DictConfig):
             mlflow.log_artifact(config_path)
 
         logger.info("Logging train parameters")
+        # Log params expects a flatten dictionary, since the configuration has nested
+        # configurations (e.g. train.model), we need to use flatten_dict in order to
+        # transform it into something that can be easilty logged by MLFlow
         mlflow.log_params(flatten_dict(OmegaConf.to_container(cfg, resolve=False)))
         run_experiment(cfg, run)
 
