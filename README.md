@@ -1,6 +1,6 @@
 # Contra la mil cabezas de la Hidra: ¿Cómo llevar registro de experimentos con ayuda de MLFlow y Hydra?
 
-El código de este repositorio es para la charla del 31 de Agosto de 2022 que di
+El código de este repositorio es para la charla del 31 de Agosto de 2022
 para la comunidad [Data-AR](https://twitter.com/dataArCommunity).
 
 El notebook de la presentación está en el notebook 
