@@ -3,6 +3,9 @@
 El código de este repositorio es para la charla del 31 de Agosto de 2022 que di
 para la comunidad [Data-AR](https://twitter.com/dataArCommunity).
 
+El notebook de la presentación está en el notebook 
+[mlflow-hydra](./mlflow-hydra.ipynb).
+
 ## Instalación
 
 Para poder correr el notebook deberán tener Python >= 3.8 (en teoría podrían
