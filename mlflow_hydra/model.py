@@ -1,37 +1,56 @@
+"""
+Model module for the MLFlow Hydra Experimentation Framework
+
+    MLFlow Hydra Experimentation Framework
+    Copyright (C) 2024 Cristian Cardellino
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from pytorch_lightning.core.lightning import LightningModule
-from typing import List, Optional
 
 
 class MultiLayerPerceptron(LightningModule):
     """
-    Multi Layer Perceptro Pytorch Lightning Module
+    Multi-Layer Perceptron Pytorch Lightning Module
 
     Parameters
     ----------
-    input_size : int
-        Dimension of the input.
-    output_size : int
-        Dimension of the output.
-    layers : List[int]
-        Sizes of the hidden layers (an empty list makes a linear model)
-    learning_rate : float
-        Learning rate parameter
-    l2_lambda : float
-        Regularization parameter (i.e. weight decay in the Adam optimizer)
-    activation : Optional[nn.Module]
-        Activation function to use in the hidden layers.
+        input_size: int
+            Dimension of the input.
+        output_size: int
+            Dimension of the output.
+        layers: list[int]
+            Sizes of the hidden layers (an empty list makes a linear model)
+        learning_rate: float
+            Learning rate parameter
+        l2_lambda: float
+            Regularization parameter (i.e. weight decay in the Adam optimizer)
+        activation: nn.Module | None
+            Activation function to use in the hidden layers.
     """
     def __init__(self,
                  input_size: int,
                  output_size: int,
-                 layers: List[int] = [64],
+                 layers: list[int] = [64],
                  learning_rate: float = 1e-3,
                  l2_lambda: float = 1e-5,
-                 activation: Optional[nn.Module] = nn.ReLU):
+                 activation: nn.Module | None = nn.ReLU):
         super().__init__()
 
         self.learning_rate = learning_rate

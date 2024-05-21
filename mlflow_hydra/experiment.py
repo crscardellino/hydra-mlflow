@@ -1,4 +1,23 @@
 #!/usr/bin/env python
+"""
+Main module for the MLFlow Hydra Experimentation Framework.
+
+    MLFlow Hydra Experimentation Framework
+    Copyright (C) 2024 Cristian Cardellino
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import hydra
 import logging
@@ -21,7 +40,17 @@ from .model import MultiLayerPerceptron
 logger = logging.getLogger(__name__)
 
 
-def run_experiment(cfg: DictConfig, run: mlflow.ActiveRun):
+def run_experiment(cfg: DictConfig, run_id: str):
+    """
+    Main function in charge of running the experiment.
+
+    Parameters
+    ----------
+        cfg: DictConfig
+            Configuration dictionary for the run given by Hydra.
+        run_id: str
+            Run id of the current MLFlow run.
+    """
     logger.info(f"Loading dataset from {cfg.input.data_file}")
     data = pd.read_csv(cfg.input.data_file)
 
@@ -67,7 +96,7 @@ def run_experiment(cfg: DictConfig, run: mlflow.ActiveRun):
     mlflow_logger = pl.loggers.MLFlowLogger(
         experiment_name=cfg.input.experiment_name,
         run_name=cfg.input.run_name,
-        run_id=run.info.run_id
+        run_id=run_id
     )
 
     logger.info("Building and training classification model")
@@ -138,6 +167,8 @@ def run_experiment(cfg: DictConfig, run: mlflow.ActiveRun):
         axis=1
     )
     with TemporaryDirectory() as tmpdir:
+        # We create a temporal directory to locally store some of the artifacts
+        # before logging them
         predictions_path = Path(tmpdir) / 'predictions.csv'
         predictions_dataset.to_csv(predictions_path, index=False)
         mlflow.log_artifact(predictions_path)
@@ -145,6 +176,14 @@ def run_experiment(cfg: DictConfig, run: mlflow.ActiveRun):
 
 @hydra.main(config_path='conf', config_name='config', version_base=None)
 def main(cfg: DictConfig):
+    """
+    Main Hydra application that runs the experiment.
+
+    Parameters
+    ----------
+        cfg: DictConfig
+            The Hydra configuration dictionary.
+    """
     OmegaConf.register_new_resolver('eval', lambda x: eval(x))
 
     mlflow.set_experiment(cfg.input.experiment_name)
@@ -161,7 +200,7 @@ def main(cfg: DictConfig):
         logger.info("Logging train parameters")
         # Log params expects a flatten dictionary, since the configuration has nested
         # configurations (e.g. train.model), we need to use flatten_dict in order to
-        # transform it into something that can be easilty logged by MLFlow
+        # transform it into something that can be easily logged by MLFlow
         mlflow.log_params(flatten_dict(OmegaConf.to_container(cfg, resolve=False)))
         run_experiment(cfg, run)
 

@@ -1,2 +1,15 @@
+## NOTICE
+
 Copyright 2022 Cristian Cardellino <https://github.com/crscardellino/data-ar-mlflow-hydra>
 Copyright 2024 Cristian Cardellino, "MLFlow + Hydra: A Framework for Experimentation with Python". Transcendent AI.
+
+## Changes
+
+This code was based on the original code from the repository ["Contra la mil cabezas de la Hidra: ¿Cómo llevar registro de experimentos con ayuda de MLFlow y Hydra?"](https://github.com/crscardellino/data-ar-mlflow-hydra/).
+
+The changes are the following:
+
+- Added the Copyright notice to the files: `mlflow_hydra/experiment.py`, `mlflow_hydra/model.py`, `mlflow_hydra/utils.py`.
+- Added docstrings to the functions in `mlflow_hydra/experiment.py`.
+- Added comments to the `run_experiment` function of `mlflow_hydra/experiment.py` explaining a section of the code.
+- Updated the docstrings and type hintings from `mlflow_hydra/model.py` and `mlflow_hydra/utils.py` to remove the use of hintings like `Dict`, `List` and `Optional` in order to use the updated type hinting provided by Python 3.10+
