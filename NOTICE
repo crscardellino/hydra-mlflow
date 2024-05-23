@@ -15,3 +15,5 @@ The changes are the following:
 - Added comments to the `run_experiment` function of `mlflow_hydra/experiment.py` explaining a section of the code.
 - Updated the docstrings and type hintings from `mlflow_hydra/model.py` and `mlflow_hydra/utils.py` to remove the use of hintings like `Dict`, `List` and `Optional` in order to use the updated type hinting provided by Python 3.10+
 - Removed the submodules: `hydra_basic`, `hydra_advanced`, `hydra_complex`.
+- Removed the notebook `mlflow-hydra.ipynb`.
+- Updated the `requirements.txt` file.
