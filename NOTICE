@@ -17,3 +17,6 @@ The changes are the following:
 - Removed the submodules: `hydra_basic`, `hydra_advanced`, `hydra_complex`.
 - Removed the notebook `mlflow-hydra.ipynb`.
 - Updated the `requirements.txt` file.
+- Updated the code from `mlflow_hydra` module to be compatible with the latest version of Lightning.
+- Added random seed for the experiment code.
+- Added a bash script exemplifying the use of the experiment.
