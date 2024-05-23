@@ -36,8 +36,8 @@ def _flatten_dict_gen(d: MutableMapping, parent_key: str, sep: str):
 
 def flatten_dict(d: MutableMapping, parent_key: str = '', sep: str = '.') -> dict[str, Any]:
     """
-    Flattens a dictionary using recursion (via an auxiliary function).
-    The list/tuples values are flattened as a string.
+    Flattens a dictionary using recursion (via an auxiliary function
+    _flatten_dict_gen). The list/tuples values are flattened as a string.
 
     Parameters
     ----------

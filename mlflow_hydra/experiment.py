@@ -24,9 +24,11 @@ import logging
 import mlflow
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 
+from lightning import Trainer, seed_everything
+from lightning.pytorch.callbacks import EarlyStopping
+from lightning.pytorch.loggers import MLFlowLogger
 from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
 from sklearn.metrics import accuracy_score, classification_report, f1_score
@@ -51,6 +53,7 @@ def run_experiment(cfg: DictConfig, run_id: str):
         run_id: str
             Run id of the current MLFlow run.
     """
+    seed_everything(cfg.train.random_seed)
     logger.info(f"Loading dataset from {cfg.input.data_file}")
     data = pd.read_csv(cfg.input.data_file)
 
@@ -87,13 +90,13 @@ def run_experiment(cfg: DictConfig, run_id: str):
         drop_last=False
     )
 
-    early_stopping = pl.callbacks.EarlyStopping(
+    early_stopping = EarlyStopping(
         monitor='mlp__validation_loss',
         min_delta=1e-5,
         patience=cfg.train.early_stop
     )
 
-    mlflow_logger = pl.loggers.MLFlowLogger(
+    mlflow_logger = MLFlowLogger(
         experiment_name=cfg.input.experiment_name,
         run_name=cfg.input.run_name,
         run_id=run_id
@@ -106,7 +109,7 @@ def run_experiment(cfg: DictConfig, run_id: str):
         **cfg.train.model
     )
 
-    trainer = pl.Trainer(
+    trainer = Trainer(
         logger=mlflow_logger,
         max_epochs=cfg.train.epochs,
         callbacks=[early_stopping],
@@ -202,7 +205,7 @@ def main(cfg: DictConfig):
         # configurations (e.g. train.model), we need to use flatten_dict in order to
         # transform it into something that can be easily logged by MLFlow
         mlflow.log_params(flatten_dict(OmegaConf.to_container(cfg, resolve=False)))
-        run_experiment(cfg, run)
+        run_experiment(cfg, run.info.run_id)
 
 
 if __name__ == "__main__":
