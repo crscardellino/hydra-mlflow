@@ -44,13 +44,16 @@ class MultiLayerPerceptron(LightningModule):
         activation: nn.Module | None
             Activation function to use in the hidden layers.
     """
-    def __init__(self,
-                 input_size: int,
-                 output_size: int,
-                 layers: list[int] = [64],
-                 learning_rate: float = 1e-3,
-                 l2_lambda: float = 1e-5,
-                 activation: nn.Module | None = nn.ReLU):
+
+    def __init__(
+        self,
+        input_size: int,
+        output_size: int,
+        layers: list[int] = [64],
+        learning_rate: float = 1e-3,
+        l2_lambda: float = 1e-5,
+        activation: nn.Module | None = nn.ReLU,
+    ):
         super().__init__()
 
         self.learning_rate = learning_rate
@@ -58,8 +61,9 @@ class MultiLayerPerceptron(LightningModule):
 
         model = []
 
-        for layer_idx, (layer_in, layer_out) in\
-                enumerate(zip([input_size] + layers, layers + [output_size])):
+        for layer_idx, (layer_in, layer_out) in enumerate(
+            zip([input_size] + layers, layers + [output_size])
+        ):
             model.append(nn.Linear(layer_in, layer_out))
             if layer_idx < len(layers) and activation is not None:
                 # Only apply activation if this isn't the last layer
@@ -76,7 +80,7 @@ class MultiLayerPerceptron(LightningModule):
         logits = self(x)
         loss = F.cross_entropy(logits, y)
 
-        self.log('mlp__train_loss', loss, on_epoch=True)
+        self.log("mlp__train_loss", loss, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -84,7 +88,7 @@ class MultiLayerPerceptron(LightningModule):
         with torch.no_grad():
             logits = self(x)
             loss = F.cross_entropy(logits, y)
-            self.log('mlp__validation_loss', loss, on_epoch=True)
+            self.log("mlp__validation_loss", loss, on_epoch=True)
 
     def predict_step(self, batch, batch_idx):
         if not torch.is_tensor(batch):
@@ -94,7 +98,5 @@ class MultiLayerPerceptron(LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(
-            self.parameters(),
-            lr=self.learning_rate,
-            weight_decay=self.l2_lambda
+            self.parameters(), lr=self.learning_rate, weight_decay=self.l2_lambda
         )

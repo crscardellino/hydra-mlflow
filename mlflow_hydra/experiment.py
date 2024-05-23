@@ -57,12 +57,12 @@ def run_experiment(cfg: DictConfig, run_id: str):
     logger.info(f"Loading dataset from {cfg.input.data_file}")
     data = pd.read_csv(cfg.input.data_file)
 
-    train_data = data.loc[data['Split'] == 'train'].iloc[:, 2:].values
-    train_target = data.loc[data['Split'] == 'train', 'Quality'].values
+    train_data = data.loc[data["Split"] == "train"].iloc[:, 2:].values
+    train_target = data.loc[data["Split"] == "train", "Quality"].values
     train_target = train_target - 1  # Reduce the value to the [0,2] interval to simplify
 
-    val_data = data.loc[data['Split'] == 'validation'].iloc[:, 2:].values
-    val_target = data.loc[data['Split'] == 'validation', 'Quality'].values
+    val_data = data.loc[data["Split"] == "validation"].iloc[:, 2:].values
+    val_target = data.loc[data["Split"] == "validation", "Quality"].values
     val_target = val_target - 1  # Reduce the value to the [0,2] interval to simplify
 
     if cfg.train.feature_scaling:
@@ -74,58 +74,42 @@ def run_experiment(cfg: DictConfig, run_id: str):
 
     train_dataset = TensorDataset(torch.FloatTensor(train_data), torch.LongTensor(train_target))
     train_dataloader = DataLoader(
-        train_dataset,
-        batch_size=cfg.train.batch_size,
-        shuffle=True,
-        num_workers=4,
-        drop_last=False
+        train_dataset, batch_size=cfg.train.batch_size, shuffle=True, num_workers=4, drop_last=False
     )
 
     val_dataset = TensorDataset(torch.FloatTensor(val_data), torch.LongTensor(val_target))
     val_dataloader = DataLoader(
-        val_dataset,
-        batch_size=cfg.train.batch_size,
-        shuffle=False,
-        num_workers=4,
-        drop_last=False
+        val_dataset, batch_size=cfg.train.batch_size, shuffle=False, num_workers=4, drop_last=False
     )
 
     early_stopping = EarlyStopping(
-        monitor='mlp__validation_loss',
-        min_delta=1e-5,
-        patience=cfg.train.early_stop
+        monitor="mlp__validation_loss", min_delta=1e-5, patience=cfg.train.early_stop
     )
 
     mlflow_logger = MLFlowLogger(
-        experiment_name=cfg.input.experiment_name,
-        run_name=cfg.input.run_name,
-        run_id=run_id
+        experiment_name=cfg.input.experiment_name, run_name=cfg.input.run_name, run_id=run_id
     )
 
     logger.info("Building and training classification model")
     model = MultiLayerPerceptron(
-        input_size=train_data.shape[1],
-        output_size=len(set(train_target)),
-        **cfg.train.model
+        input_size=train_data.shape[1], output_size=len(set(train_target)), **cfg.train.model
     )
 
     trainer = Trainer(
         logger=mlflow_logger,
         max_epochs=cfg.train.epochs,
         callbacks=[early_stopping],
-        log_every_n_steps=max(len(train_dataloader) // 100, 1)
+        log_every_n_steps=max(len(train_dataloader) // 100, 1),
     )
 
-    trainer.fit(model,
-                train_dataloaders=train_dataloader,
-                val_dataloaders=val_dataloader)
+    trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
     logger.info("Finished training classification model")
 
     if cfg.train.test_evaluation:
         logger.info("Evaluating final model using test split")
-        eval_data = data.loc[data['Split'] == 'test'].iloc[:, 2:].values
-        eval_target = data.loc[data['Split'] == 'test', 'Quality'].values
+        eval_data = data.loc[data["Split"] == "test"].iloc[:, 2:].values
+        eval_target = data.loc[data["Split"] == "test", "Quality"].values
         eval_target = eval_target - 1
         if cfg.train.feature_scaling:
             eval_data = scaler.transform(eval_data)
@@ -136,26 +120,19 @@ def run_experiment(cfg: DictConfig, run_id: str):
 
     eval_dataset = TensorDataset(torch.FloatTensor(eval_data))
     eval_dataloader = DataLoader(
-        eval_dataset,
-        batch_size=cfg.train.batch_size,
-        shuffle=False,
-        num_workers=4,
-        drop_last=False
+        eval_dataset, batch_size=cfg.train.batch_size, shuffle=False, num_workers=4, drop_last=False
     )
 
-    eval_probs = np.concatenate([
-        pred.detach().cpu().numpy() for pred in trainer.predict(model, eval_dataloader)
-    ])
+    eval_probs = np.concatenate(
+        [pred.detach().cpu().numpy() for pred in trainer.predict(model, eval_dataloader)]
+    )
     eval_preds = eval_probs.argmax(axis=1)
     accuracy = accuracy_score(eval_target, eval_preds)
     f1 = f1_score(eval_target, eval_preds, average="macro")
     report = f"**Classification results**\n```{classification_report(eval_target, eval_preds)}```"
 
     logger.info("Logging evaluation results on mlflow")
-    mlflow.log_metrics({
-        "accuracy": accuracy,
-        "f1_score": f1
-    })
+    mlflow.log_metrics({"accuracy": accuracy, "f1_score": f1})
     mlflow.set_tag("mlflow.note.content", report)
 
     logger.info("Logging evaluation predictions as artifacts")
@@ -163,21 +140,20 @@ def run_experiment(cfg: DictConfig, run_id: str):
     target_predictions = pd.Series(eval_target, name="Quality")
     predictions_probs = pd.DataFrame(
         eval_probs,
-        columns=[f"Quality {i+1} Prediction Probability" for i in range(len(set(eval_target)))]
+        columns=[f"Quality {i+1} Prediction Probability" for i in range(len(set(eval_target)))],
     )
     predictions_dataset = pd.concat(
-        [target_predictions, predictions_probs, predictions_features],
-        axis=1
+        [target_predictions, predictions_probs, predictions_features], axis=1
     )
     with TemporaryDirectory() as tmpdir:
         # We create a temporal directory to locally store some of the artifacts
         # before logging them
-        predictions_path = Path(tmpdir) / 'predictions.csv'
+        predictions_path = Path(tmpdir) / "predictions.csv"
         predictions_dataset.to_csv(predictions_path, index=False)
         mlflow.log_artifact(predictions_path)
 
 
-@hydra.main(config_path='conf', config_name='config', version_base=None)
+@hydra.main(config_path="conf", config_name="config", version_base=None)
 def main(cfg: DictConfig):
     """
     Main Hydra application that runs the experiment.
@@ -187,15 +163,15 @@ def main(cfg: DictConfig):
         cfg: DictConfig
             The Hydra configuration dictionary.
     """
-    OmegaConf.register_new_resolver('eval', lambda x: eval(x))
+    OmegaConf.register_new_resolver("eval", lambda x: eval(x))
 
     mlflow.set_experiment(cfg.input.experiment_name)
-    mlflow.set_experiment_tag('mlflow.note.content', cfg.input.experiment_description)
+    mlflow.set_experiment_tag("mlflow.note.content", cfg.input.experiment_description)
 
     with mlflow.start_run(run_name=cfg.input.run_name) as run:
         logger.info("Logging configuration as artifact")
         with TemporaryDirectory() as tmpdir:
-            config_path = Path(tmpdir) / 'config.yaml'
+            config_path = Path(tmpdir) / "config.yaml"
             with open(config_path, "wt") as fh:
                 print(OmegaConf.to_yaml(cfg, resolve=False), file=fh)
             mlflow.log_artifact(config_path)
